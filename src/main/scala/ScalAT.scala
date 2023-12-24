@@ -147,7 +147,9 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
   }
 
   //Adds the logaritic encoding of the at-most-one
-  def addAMOLog(x: List[Int]): Unit = ???
+  def addAMOLog(x: List[Int]): Unit = {
+
+  }
 
   //Adds the encoding of the at-least-one.
   def addALO(l: List[Int]): Unit = addClause(l)
