@@ -149,19 +149,32 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
   //Adds the logaritic encoding of the at-most-one
   def addAMOLog(x: List[Int]): Unit = {
     var y: List[Int] = List()
+    val n: Int = Math.max(1,Math.ceil(Math.log(x.length)).toInt)
 
     // Instantiate the new variables
-    for (i <- 0 to Math.ceil(Math.log(x.length)).toInt)
+    for (i <- 0 until n)
       y = newVar() :: y
 
     // Iterate over all the variable indexs in x
-    for (i <- 0 to x.length) {
+    for (i <- 0 until x.length-1) {
       // Iterate over each index in binary
-      i.toBinaryString.zipWithIndex.foreach{ case (digit, index) =>
-        if(digit==0)
-          addClause(-x(i) :: -y(index) :: List())
-        else
-          addClause(-x(i) :: y(index) :: List())
+      var bin: String = i.toBinaryString
+
+      print(bin.length + " - " + n + "\n")
+      while(n>bin.length)
+        bin = '0' + bin
+
+      print(bin.length + " - " + n + "\n")
+
+      for(j <- 0 until n){
+        print(bin(j) + ": " + j + "\n")
+        if (bin(j) == '0') {
+          addClause(-x(i) :: -y(j) :: List())
+        }
+        else if (bin(j) == '1') {
+          addClause(-x(i) :: y(j) :: List())
+        } else
+          print("ERROR")
       }
     }
   }
