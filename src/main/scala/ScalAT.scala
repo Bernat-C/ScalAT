@@ -148,7 +148,22 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
   //Adds the logaritic encoding of the at-most-one
   def addAMOLog(x: List[Int]): Unit = {
+    var y: List[Int] = List()
 
+    // Instantiate the new variables
+    for (i <- 0 to Math.ceil(Math.log(x.length)).toInt)
+      y = newVar() :: y
+
+    // Iterate over all the variable indexs in x
+    for (i <- 0 to x.length) {
+      // Iterate over each index in binary
+      i.toBinaryString.zipWithIndex.foreach{ case (digit, index) =>
+        if(digit==0)
+          addClause(-x(i) :: -y(index) :: List())
+        else
+          addClause(-x(i) :: y(index) :: List())
+      }
+    }
   }
 
   //Adds the encoding of the at-least-one.
@@ -249,17 +264,50 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
   //Adds the encoding of an exactly-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
-  def addEK(x: List[Int], K: Int): Unit = ???
+  def addEK(x: List[Int], K: Int): Unit = {
+    addALK(x, K)
+    addAMK(x, K)
+  }
 
 
 
   //Adds the encoding of an at-least-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
-  def addALK(x: List[Int], K: Int): Unit = ???
+  def addALK(x: List[Int], K: Int): Unit = {
+    if(x.isEmpty || K>x.length)
+      return
+
+    var y: List[Int] = List()
+
+    for(i <- 0 to x.length)
+      y = newVar() :: y
+
+    addSorter(x, y)
+
+    addClause(y(K) :: List())
+  }
 
   //Adds the encoding of an at-most-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
-  def addAMK(x: List[Int], K: Int): Unit = ???
+  def addAMK(x: List[Int], K: Int): Unit = {
+    if (K==0 || K > x.length) { // Si la llista és buida està implicit
+      // Error
+      return
+    }
+    else if(K == x.length) {
+      // Satisfet
+      return
+    }
+
+    var y: List[Int] = List()
+
+    for (i <- 0 to x.length)
+      y = newVar() :: y
+
+    addSorter(x, y)
+
+    addClause(-y(K+1) :: List())
+  }
 
 
   //Adds a PB constraint of the form q[0]x[0] + q[1]x[1] + ... + q[n]x[n] <= K
