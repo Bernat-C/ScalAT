@@ -274,7 +274,7 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
   //Adds the encoding of an at-least-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
   def addALK(x: List[Int], K: Int): Unit = {
-    if(x.isEmpty || K>x.length)
+    if(x.isEmpty || K>x.length || K <= 0)
       return
 
     var y: List[Int] = List()
@@ -284,17 +284,17 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
     addSorter(x, y)
 
-    addClause(y(K) :: List())
+    addClause(y(K-1) :: List())
   }
 
   //Adds the encoding of an at-most-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
   def addAMK(x: List[Int], K: Int): Unit = {
-    if (K==0 || K > x.length) { // Si la llista és buida està implicit
+    if (K<0) { // Si la llista és buida està implicit
       // Error
       return
     }
-    else if(K == x.length) {
+    else if(K >= x.length) {
       // Satisfet
       return
     }
@@ -306,7 +306,7 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
     addSorter(x, y)
 
-    addClause(-y(K+1) :: List())
+    addClause(-y(K) :: List())
   }
 
 
