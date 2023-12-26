@@ -65,20 +65,12 @@ object CrowdedChessboard extends App{
   }
 
   // CAVALLS
-  for (x <- 0 until n; y <- 0 until n) {
-    val possibleMoves = List((1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1))
+  val possibleMoves = List((1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1))
 
-    val moviments = possibleMoves.flatMap { case (dx, dy) =>
-      val newX = x + dx
-      val newY = y + dy
-      if (newX >= 0 && newY >= 0 && newX < n && newY < n) Some((newX, newY)) else None
-    }
-
-    e.addAMOQuad(moviments.map(x => cavalls(x._1)(x._2)))
-  }
+  for (x <- 0 until n; y <- 0 until n)
+    e.addAMOQuad(for (i <- possibleMoves; if i._1+x >= 0 && i._2+y >= 0 && i._1+x < n && i._2+y < n) yield cavalls(i._1+x)(i._2+y))
 
   def getTauler = {
-    //println(reines.map(x => x.mkString("Array(", ", ", ")")).mkString("Array(", ", ", ")"))
     for (i <- reines.indices) {
       for (j <- reines(i).indices) {
         if (e.getValue(reines(i)(j))) {
