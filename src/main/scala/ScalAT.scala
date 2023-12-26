@@ -148,8 +148,11 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
   //Adds the logaritic encoding of the at-most-one
   def addAMOLog(x: List[Int]): Unit = {
+    if(x.length <= 1)
+      return
+
     var y: List[Int] = List()
-    val n: Int = Math.max(1,Math.ceil(Math.log(x.length)).toInt)
+    val n: Int = Math.ceil(Math.log(x.length)).toInt
 
     // Instantiate the new variables
     for (i <- 0 until n)
@@ -160,21 +163,16 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
       // Iterate over each index in binary
       var bin: String = i.toBinaryString
 
-      print(bin.length + " - " + n + "\n")
       while(n>bin.length)
         bin = '0' + bin
 
-      print(bin.length + " - " + n + "\n")
-
       for(j <- 0 until n){
-        print(bin(j) + ": " + j + "\n")
         if (bin(j) == '0') {
           addClause(-x(i) :: -y(j) :: List())
         }
-        else if (bin(j) == '1') {
+        else {
           addClause(-x(i) :: y(j) :: List())
-        } else
-          print("ERROR")
+        }
       }
     }
   }
@@ -292,7 +290,7 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
     var y: List[Int] = List()
 
-    for(i <- 0 to x.length)
+    for(i <- 0 until x.length)
       y = newVar() :: y
 
     addSorter(x, y)
@@ -314,7 +312,7 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
     var y: List[Int] = List()
 
-    for (i <- 0 to x.length)
+    for (i <- 0 until x.length)
       y = newVar() :: y
 
     addSorter(x, y)
