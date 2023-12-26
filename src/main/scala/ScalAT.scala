@@ -151,16 +151,11 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
     if(x.length <= 1)
       return
 
-    var y: List[Int] = List()
-    val n: Int = Math.ceil(Math.log(x.length)).toInt
+    val y: List[Int] = newVarArray(x.length).toList
+    val n: Int = Math.ceil(Math.log(x.length)/Math.log(2.0)).toInt
 
-    // Instantiate the new variables
-    for (i <- 0 until n)
-      y = newVar() :: y
-
-    // Iterate over all the variable indexs in x
-    for (i <- 0 until x.length-1) {
-      // Iterate over each index in binary
+    // Iterate over all the variable indexes in x
+    for (i <- x.indices) {
       var bin: String = i.toBinaryString
 
       while(n>bin.length)
@@ -288,10 +283,7 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
     if(x.isEmpty || K>x.length || K <= 0)
       return
 
-    var y: List[Int] = List()
-
-    for(i <- 0 until x.length)
-      y = newVar() :: y
+    val y: List[Int] = newVarArray(x.length).toList
 
     addSorter(x, y)
 
@@ -310,10 +302,7 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
       return
     }
 
-    var y: List[Int] = List()
-
-    for (i <- 0 until x.length)
-      y = newVar() :: y
+    val y: List[Int] = newVarArray(x.length).toList
 
     addSorter(x, y)
 
