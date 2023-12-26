@@ -3,12 +3,12 @@ object CrowdedChessboard extends App{
   val e = new ScalAT("CrowdedChessboard")
 
   //Mida tauler
-  val n = 5
+  val n = 6
 
-  val nReines = 5;
-  val nTorres = 5;
-  val nAlfils = 8;
-  val nCavalls = 5;
+  val nReines = 6;
+  val nTorres = 6;
+  val nAlfils = 10;
+  val nCavalls = 9;
 
   /* objecte(i)(j) cert si la casella i j conté una peça de tipus objecte*/
   val reines: Array[Array[Int]] = e.newVar2DArray(n, n)
@@ -64,11 +64,19 @@ object CrowdedChessboard extends App{
     e.addAMOQuad((for (i <- 0 until n; j <- 0 until n; if i - j == v) yield alfils(i)(j)).toList)
   }
 
+  e.addClause(List(alfils(0)(0)))
+  e.addClause(List(reines(0)(1)))
+  e.addClause(List(alfils(0)(2)))
+  e.addClause(List(alfils(0)(3)))
+  e.addClause(List(alfils(1)(0)))
+
   // CAVALLS
   val possibleMoves = List((1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1))
 
   for (x <- 0 until n; y <- 0 until n)
-    e.addAMOQuad(for (i <- possibleMoves; if i._1+x >= 0 && i._2+y >= 0 && i._1+x < n && i._2+y < n) yield cavalls(i._1+x)(i._2+y))
+    for (i <- possibleMoves; if i._1+x >= 0 && i._2+y >= 0 && i._1+x < n && i._2+y < n)
+      e.addAMOQuad(List(cavalls(x)(y),cavalls(i._1+x)(i._2+y)))
+      //e.addClause(-cavalls(x)(y) :: -cavalls(i._1+x)(i._2+y) :: List())
 
   def getTauler = {
     for (i <- reines.indices) {
