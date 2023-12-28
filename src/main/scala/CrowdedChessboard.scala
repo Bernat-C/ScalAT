@@ -3,20 +3,20 @@ object CrowdedChessboard extends App{
   val e = new ScalAT("CrowdedChessboard")
 
   //Mida tauler
-  val n = 5
+  val n = 11
 
-  val nReines = 5;
-  val nTorres = 5;
-  val nAlfils = 8;
-  val nCavalls = 5;
+  val nReines = 11;
+  val nTorres = 11;
+  val nAlfils = 20;
+  val nCavalls = 47;
 
   /* objecte(i)(j) cert si la casella i j conté una peça de tipus objecte*/
   val reines: Array[Array[Int]] = e.newVar2DArray(n, n)
   val torres: Array[Array[Int]] = e.newVar2DArray(n, n)
   val alfils: Array[Array[Int]] = e.newVar2DArray(n, n)
   val cavalls: Array[Array[Int]] = e.newVar2DArray(n, n)
-  val diagonals: Array[Int] = e.newVarArray(2*n-1);
-  val contradiagonals: Array[Int] = e.newVarArray(2*n-1);
+  val diagonals: Array[Int] = e.newVarArray(2*n-1) //Variables que indiquen si una diagonal té un alfil
+  val contradiagonals: Array[Int] = e.newVarArray(2*n-1); //Variables que indiquen si una contradiagonal té un alfil
 
   // GENÈRIQUES
   for (i <- 0 until n)
@@ -51,6 +51,16 @@ object CrowdedChessboard extends App{
     e.addAMOLog((for (i <- 0 until n; j <- 0 until n; if i - j == v) yield reines(i)(j)).toList)
   }
 
+  //Trencament de simetries
+  /*
+  for(i <- 0 until n )
+    for(j <- i+1 until n){
+      e.addClause(-reines(1)(i) :: -reines(n-1)(j) :: List())
+      e.addClause(-reines(i)(1) :: -reines(j)(n-1) :: List())
+    }*/
+
+
+
   // TORRES
   //A cada fila hi ha una torre
   for (i <- torres) {
@@ -69,35 +79,39 @@ object CrowdedChessboard extends App{
     e.addAMOLog((for (i <- 0 until n; j <- 0 until n; if i + j == v) yield alfils(i)(j)).toList)
   }
 
-
   //A cada diagonal hi ha com a molt un alfil
   for (v <- -n + 1 until n) {
     e.addAMOLog((for (i <- 0 until n; j <- 0 until n; if i - j == v) yield alfils(i)(j)).toList)
   }
 
-  //Reifiquem (????????????????????????) caselles amb alfil i diagonals
-  for(v <- -n + 1 until n){
-    var casellesDiag = (for (i <- 0 until n; j <- 0 until n; if i - j == v) yield alfils(i)(j)).toList;
-    for(i <- casellesDiag.indices) e.addClause(-casellesDiag(i) :: diagonals(v + n - 1) :: List())
-    e.addClause(List(-diagonals(v + n - 1)).concat(casellesDiag))
+  if(nAlfils >= 2*(n-1)) {
+    //Reifiquem (????????????????????????) caselles amb alfil i diagonals
+    for (v <- -n + 1 until n) {
+      var casellesDiag = (for (i <- 0 until n; j <- 0 until n; if i - j == v) yield alfils(i)(j)).toList;
+      for (i <- casellesDiag.indices) e.addClause(-casellesDiag(i) :: diagonals(v + n - 1) :: List())
+      e.addClause(List(-diagonals(v + n - 1)).concat(casellesDiag))
+    }
+
+    //Hi ha d'haver exactament 2*(n-1) diagonals amb un alfil
+    e.addEK(diagonals.toList, 2 * (n - 1))
+
+    //Reifiquem (????????????????????????) caselles amb alfil i contradiagonals
+    for (v <- -n + 1 until n) {
+      var casellesContradiag = (for (i <- 0 until n; j <- 0 until n; if i - j == v) yield alfils(i)(j)).toList;
+      for (i <- casellesContradiag.indices) e.addClause(-casellesContradiag(i) :: diagonals(v + n - 1) :: List())
+      e.addClause(List(-contradiagonals(v + n - 1)).concat(casellesContradiag))
+    }
+
+    //Hi ha d'haver exactament 2*(n-1) diagonals amb un alfil
+    e.addEK(contradiagonals.toList, 2 * (n - 1))
   }
 
-  //Hi ha d'haver exactament 2*(n-1) diagonals amb un alfil
-  e.addEK(diagonals.toList, 2*(n-1))
 
-  //Reifiquem (????????????????????????) caselles amb alfil i contradiagonals
-  for (v <- -n + 1 until n) {
-    var casellesContradiag = (for (i <- 0 until n; j <- 0 until n; if i - j == v) yield alfils(i)(j)).toList;
-    for (i <- casellesContradiag.indices) e.addClause(-casellesContradiag(i) :: diagonals(v + n - 1) :: List())
-    e.addClause(List(-contradiagonals(v + n - 1)).concat(casellesContradiag))
-  }
-
-  //Hi ha d'haver exactament 2*(n-1) diagonals amb un alfil
-  e.addEK(contradiagonals.toList, 2 * (n - 1))
 
   // CAVALLS
-  val possibleMoves = List((1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1))
 
+  //val possibleMoves = List((1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1))
+  val possibleMoves = List((1, -2), (-1, -2), (2, -1), (-2, -1))
   for (x <- 0 until n; y <- 0 until n)
     for (i <- possibleMoves; if i._1+x >= 0 && i._2+y >= 0 && i._1+x < n && i._2+y < n)
       e.addAMOLog(List(cavalls(x)(y),cavalls(i._1+x)(i._2+y)))
