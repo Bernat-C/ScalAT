@@ -146,23 +146,28 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
         addClause(-l(i) :: -l(j) :: List())
   }
 
-  //Adds the logaritic encoding of the at-most-one
+  val log2: Double = Math.log(2.0)
+  //Adds the logarithmic encoding of the at-most-one
   def addAMOLog(x: List[Int]): Unit = {
     if(x.length <= 1)
       return
 
-    val y: List[Int] = newVarArray(x.length).toList
-    val n: Int = Math.ceil(Math.log(x.length)/Math.log(2.0)).toInt
+    val n: Int = Math.ceil(Math.log(x.length)/log2).toInt
+    val y: List[Int] = newVarArray(n).toList
 
     // Iterate over all the variable indexes in x
     for (i <- x.indices) {
-      var bin: String = i.toBinaryString
+      val bin: String = i.toBinaryString
+      val offset = n - bin.length
 
-      while(n>bin.length)
-        bin = '0' + bin
+      //Negate variables not present in the binary number
+      for (j <- 0 until offset) {
+        addClause(-x(i) :: -y(j) :: List())
+      }
 
-      for(j <- 0 until n){
-        if (bin(j) == '0') {
+      //Handle each case (0 or 1 values)
+      for (j <- offset  until n) {
+        if (bin(j - offset) == '0') {
           addClause(-x(i) :: -y(j) :: List())
         }
         else {
