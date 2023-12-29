@@ -285,9 +285,13 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
   //Adds the encoding of an at-least-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
   def addALK(x: List[Int], K: Int): Unit = {
-    if(x.isEmpty || K>x.length || K <= 0)
+    if(x.isEmpty || K <= 0)
       return
-
+    else if(K>x.length) {
+      val aux: Int = newVar();
+      addClause(aux :: List())
+      addClause(-aux :: List())
+    }
     val y: List[Int] = newVarArray(x.length).toList
 
     addSorter(x, y)
