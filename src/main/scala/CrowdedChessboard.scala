@@ -1,14 +1,16 @@
+import CrowdedChessboard.n
+
 object CrowdedChessboard extends App{
 
   val e = new ScalAT("CrowdedChessboard")
 
   //Mida tauler
-  val n = 11
+  val n = 12
 
-  val nReines = 11;
-  val nTorres = 11;
-  val nAlfils = 20;
-  val nCavalls = 47;
+  val nReines = 12;
+  val nTorres = 12;
+  val nAlfils = 22;
+  val nCavalls = 58;
 
   /* objecte(i)(j) cert si la casella i j conté una peça de tipus objecte*/
   val reines: Array[Array[Int]] = e.newVar2DArray(n, n)
@@ -52,13 +54,26 @@ object CrowdedChessboard extends App{
   }
 
   //Trencament de simetries
+  //Original: Doble sat, meitat unsat
   /*
   for(i <- 0 until n )
     for(j <- i+1 until n){
       e.addClause(-reines(1)(i) :: -reines(n-1)(j) :: List())
       e.addClause(-reines(i)(1) :: -reines(j)(n-1) :: List())
     }*/
-
+  //Lleuger augment sat, gran decrement unsat
+  for (i <- 0 until n)
+    for (j <- i + 1 until n) {
+      e.addClause(-reines(2)(i) :: -reines(1)(j) :: List())
+      e.addClause(-reines(i)(2) :: -reines(j)(1) :: List())
+    }
+  //Més del doble sat, menys del doble unsat
+  /*
+  for (i <- 0 until n)
+    for (j <- i + 1 until n) {
+      e.addClause(-reines(n - 1)(i) :: -reines(1)(j) :: List())
+      e.addClause(-reines(i)(n - 1) :: -reines(j)(1) :: List())
+    }*/
 
 
   // TORRES
