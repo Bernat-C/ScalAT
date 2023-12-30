@@ -1,8 +1,9 @@
-import CrowdedChessboard.n
+import CrowdedChessboard.{n, possibleMoves}
 
 object CrowdedChessboard extends App{
 
   val e = new ScalAT("CrowdedChessboard")
+  var e2 = new ScalAT("CrowdedChessboardKings")
 
   val instancies: Array[Array[Int]] = Array(
     Array(5,5,5,8,5),
@@ -21,7 +22,8 @@ object CrowdedChessboard extends App{
 
   var configuracioLog = true;
   var unsat = false;
-  var instanciaEscollida = 6 //De 0 a 11
+  var placeKings = true;
+  var instanciaEscollida = 4 //De 0 a 11
   //Mida tauler
   val n = instancies(instanciaEscollida)(0)
 
@@ -39,6 +41,11 @@ object CrowdedChessboard extends App{
   val diagonals: Array[Int] = e.newVarArray(2*n-1) //Variables que indiquen si una diagonal té un alfil
   val contradiagonals: Array[Int] = e.newVarArray(2*n-1); //Variables que indiquen si una contradiagonal té un alfil
 
+  var reis: Array[Array[Int]] = e2.newVar2DArray(n, n)
+  var reisAux: Array[Array[Boolean]] =  Array.ofDim(n,n)
+  var reisCopy: Array[Array[Boolean]] = reisAux.map(_.clone())
+
+
   // GENÈRIQUES
   for (i <- 0 until n)
     for (j <- 0 until n) {
@@ -51,6 +58,7 @@ object CrowdedChessboard extends App{
   e.addEK(reines.flatten.toList, nReines)
   e.addEK(torres.flatten.toList, nTorres)
   e.addEK(alfils.flatten.toList, nAlfils)
+  //e.addEK((for(i <- 0 until n; j <- 0 until n; if(i == 0 | j == 0 | i == n-1 | j == n-1)) yield alfils(i)(j)).toList, nAlfils)
   e.addEK(cavalls.flatten.toList, nCavalls)
 
   // REINES
@@ -151,6 +159,16 @@ object CrowdedChessboard extends App{
   }
 
   // ALFILS
+  // Només hi ha alfils als extrems del tauler
+  for(i <- 1 until n-1){
+    for(j <- 1 until n-1){
+      e.addClause(-alfils(i)(j) :: List())
+    }
+  }
+
+  //e.addEOLog(alfils(0)(0) :: alfils(n-1)(n-1) :: List())
+  //e.addEOLog(alfils(0)(n-1) :: alfils(n-1)(0) :: List())
+
   //A cada contradiagonal hi ha com a molt un alfil
   for (v <- 0 to 2 * n - 2) {
     val l = (for (i <- 0 until n; j <- 0 until n; if i + j == v) yield alfils(i)(j)).toList
@@ -220,7 +238,9 @@ object CrowdedChessboard extends App{
           print("A ")
         } else if (e.getValue(cavalls(i)(j))) {
           print("C ")
-        } else {
+        } else if (placeKings && reisAux(i)(j)) {
+          print ("K ")
+        } else{
           print(". ")
         }
       }
@@ -228,7 +248,75 @@ object CrowdedChessboard extends App{
     }
   }
 
+  def getTaulerDummy = {
+    for (i <- reines.indices) {
+      for (j <- reines(i).indices) {
+        if (placeKings && e2.getValue(reis(i)(j))) print ("K ")
+        else print (". ")
+      }
+      println()
+    }
+  }
+
   val result = e.solve()
   println(result)
-  if (result.satisfiable) println(getTauler)
+
+  //Reis
+  if(result.satisfiable && placeKings){
+    val emptySpaces = n*n - nReines - nAlfils - nTorres - nCavalls
+    val possibleMoves = List((1, 0), (1, -1), (0, -1), (-1, -1))
+
+    val l = (for(i <- 0 until n; j <- 0 until n; if(
+      e.getValue(reines(i)(j)) |  e.getValue(torres(i)(j)) |  e.getValue(alfils(i)(j)) |  e.getValue(cavalls(i)(j))
+    )) yield reis(i)(j)).toList
+
+    /*for(x <- 0 until n; y <- 0 until n){
+      for (i <- possibleMoves; if i._1 + x >= 0 && i._2 + y >= 0 && i._1 + x < n && i._2 + y < n) {
+        if (configuracioLog) e.addAMOLog(List(reis(x)(y), reis(i._1 + x)(i._2 + y)))
+        else e.addAMOQuad(List(reis(x)(y), reis(i._1 + x)(i._2 + y)))
+      }
+    }*/
+    /*
+    for (i <- 0 until n ; j <- 0 until n; if (
+      e.getValue(reines(i)(j)) | e.getValue(torres(i)(j)) | e.getValue(alfils(i)(j)) | e.getValue(cavalls(i)(j))
+      )) e2.addClause(-reis(i)(j) :: List())*/
+
+    for (i <- l.indices) e2.addClause(-l(i) :: List())
+    var nReis = 1
+    e2.addEK(reis.flatten.toList, nReis)
+    var result2 = e2.solve()
+    while(result2.satisfiable & nReis < emptySpaces) {
+      nReis += 1
+      e2 = new ScalAT("CrowdedChessboardKings")
+      reis = e2.newVar2DArray(n, n)
+      for (i <- l.indices) e2.addClause(-l(i) :: List())
+      e2.addEK(reis.flatten.toList, nReis)
+
+      result2 = e2.solve()
+      if(result2.satisfiable) {
+        for(i <- reines.indices){
+          for(j <- reines.indices){
+            reisAux(i)(j) = e2.getValue(reis(i)(j))
+          }
+        }
+      }
+    }
+
+    //nReis += 1
+    //e2.addEK(reis.flatten.toList, nReis)
+    //var result2 = e2.solve()
+    /*
+    while(result2.satisfiable && nReis < 3){
+      nReis += 1
+      e2 = new ScalAT("CrowdedChessboardKings")
+      reis = e2.newVar2DArray(n, n)
+      for (i <- l.indices) e2.addClause(-l(i) :: List())
+      e2.addEK(reis.flatten.toList, nReis)
+      result2 = e2.solve()
+    }*/
+    //println("En total podem posar " ++ (nReis - 1).toString ++ " Reis")
+    if(result2.satisfiable) println(getTauler)
+  }
+
+  if (!placeKings && result.satisfiable) println(getTauler)
 }
