@@ -23,7 +23,7 @@ object CrowdedChessboard extends App{
   var configuracioLog = true;
   var unsat = false;
   var placeKings = true;
-  var instanciaEscollida = 4 //De 0 a 11
+  var instanciaEscollida = 2 //De 0 a 11
   //Mida tauler
   val n = instancies(instanciaEscollida)(0)
 
@@ -248,74 +248,51 @@ object CrowdedChessboard extends App{
     }
   }
 
-  def getTaulerDummy = {
-    for (i <- reines.indices) {
-      for (j <- reines(i).indices) {
-        if (placeKings && e2.getValue(reis(i)(j))) print ("K ")
-        else print (". ")
-      }
-      println()
-    }
-  }
-
   val result = e.solve()
   println(result)
 
   //Reis
   if(result.satisfiable && placeKings){
     val emptySpaces = n*n - nReines - nAlfils - nTorres - nCavalls
-    val possibleMoves = List((1, 0), (1, -1), (0, -1), (-1, -1))
+    val possibleMoves = List((1, 0), (1, -1), (0, -1), (-1, -1), (-1,0), (-1,1), (0,1), (1,1))
+    //val possibleMoves = List((1, 0), (1, -1), (0, -1), (-1, -1))
 
     val l = (for(i <- 0 until n; j <- 0 until n; if(
       e.getValue(reines(i)(j)) |  e.getValue(torres(i)(j)) |  e.getValue(alfils(i)(j)) |  e.getValue(cavalls(i)(j))
     )) yield reis(i)(j)).toList
 
-    /*for(x <- 0 until n; y <- 0 until n){
-      for (i <- possibleMoves; if i._1 + x >= 0 && i._2 + y >= 0 && i._1 + x < n && i._2 + y < n) {
-        if (configuracioLog) e.addAMOLog(List(reis(x)(y), reis(i._1 + x)(i._2 + y)))
-        else e.addAMOQuad(List(reis(x)(y), reis(i._1 + x)(i._2 + y)))
-      }
-    }*/
-    /*
-    for (i <- 0 until n ; j <- 0 until n; if (
-      e.getValue(reines(i)(j)) | e.getValue(torres(i)(j)) | e.getValue(alfils(i)(j)) | e.getValue(cavalls(i)(j))
-      )) e2.addClause(-reis(i)(j) :: List())*/
-
-    for (i <- l.indices) e2.addClause(-l(i) :: List())
-    var nReis = 1
-    e2.addEK(reis.flatten.toList, nReis)
-    var result2 = e2.solve()
-    while(result2.satisfiable & nReis < emptySpaces) {
-      nReis += 1
+    //Obtenim el nombre de reis màxim en la solució inicial
+    var nReis = 0
+    var result2: SolverResult = null
+    var kingsTime: Double = 0
+    do {
       e2 = new ScalAT("CrowdedChessboardKings")
+      nReis += 1
       reis = e2.newVar2DArray(n, n)
       for (i <- l.indices) e2.addClause(-l(i) :: List())
       e2.addEK(reis.flatten.toList, nReis)
+      for (x <- 0 until n; y <- 0 until n) {
+        for (i <- possibleMoves; if i._1 + x >= 0 && i._2 + y >= 0 && i._1 + x < n && i._2 + y < n) {
+          if (configuracioLog) e2.addAMOLog(List(reis(x)(y), reis(i._1 + x)(i._2 + y)))
+          else e2.addAMOQuad(List(reis(x)(y), reis(i._1 + x)(i._2 + y)))
+        }
+      }
 
       result2 = e2.solve()
-      if(result2.satisfiable) {
-        for(i <- reines.indices){
-          for(j <- reines.indices){
+      kingsTime += result2.time
+      if (result2.satisfiable) {
+        for (i <- reines.indices) {
+          for (j <- reines.indices) {
             reisAux(i)(j) = e2.getValue(reis(i)(j))
           }
         }
       }
-    }
+    } while (result2.satisfiable & nReis < emptySpaces)
 
-    //nReis += 1
-    //e2.addEK(reis.flatten.toList, nReis)
-    //var result2 = e2.solve()
-    /*
-    while(result2.satisfiable && nReis < 3){
-      nReis += 1
-      e2 = new ScalAT("CrowdedChessboardKings")
-      reis = e2.newVar2DArray(n, n)
-      for (i <- l.indices) e2.addClause(-l(i) :: List())
-      e2.addEK(reis.flatten.toList, nReis)
-      result2 = e2.solve()
-    }*/
     //println("En total podem posar " ++ (nReis - 1).toString ++ " Reis")
-    if(result2.satisfiable) println(getTauler)
+    println("***********************")
+    println("King's Time: " ++ kingsTime.toString)
+    println(getTauler)
   }
 
   if (!placeKings && result.satisfiable) println(getTauler)
