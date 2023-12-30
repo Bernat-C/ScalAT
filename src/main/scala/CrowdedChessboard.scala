@@ -1,7 +1,7 @@
 import CrowdedChessboard.{n, possibleMoves}
 
 object CrowdedChessboard extends App{
-
+  //TODO: Posar tota la part de generació de contraints inicials en una funció per poder-ho reutilitzar
   val e = new ScalAT("CrowdedChessboard")
   var e2 = new ScalAT("CrowdedChessboardKings")
 
@@ -254,8 +254,8 @@ object CrowdedChessboard extends App{
   //Reis
   if(result.satisfiable && placeKings){
     val emptySpaces = n*n - nReines - nAlfils - nTorres - nCavalls
-    val possibleMoves = List((1, 0), (1, -1), (0, -1), (-1, -1), (-1,0), (-1,1), (0,1), (1,1))
-    //val possibleMoves = List((1, 0), (1, -1), (0, -1), (-1, -1))
+    //val possibleMoves = List((1, 0), (1, -1), (0, -1), (-1, -1), (-1,0), (-1,1), (0,1), (1,1))
+    val possibleMoves = List((1, 0), (1, -1), (0, -1), (-1, -1))
 
     val l = (for(i <- 0 until n; j <- 0 until n; if(
       e.getValue(reines(i)(j)) |  e.getValue(torres(i)(j)) |  e.getValue(alfils(i)(j)) |  e.getValue(cavalls(i)(j))
