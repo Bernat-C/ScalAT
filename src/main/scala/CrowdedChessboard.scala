@@ -22,7 +22,7 @@ object CrowdedChessboard extends App{
   var configuracioLog = true;
   var unsat = false;
   var placeKings = true;
-  var instanciaEscollida = 2 //De 0 a 11
+  var instanciaEscollida = 5 //De 0 a 11
   //Mida tauler
   val n = instancies(instanciaEscollida)(0)
 
@@ -538,9 +538,11 @@ object CrowdedChessboard extends App{
     else println("En total podem posar " ++ nReis.toString ++ " Reis")
     println("King's Time: " ++ kingsTime.toString ++ "\n")
 
-    if(nReis < emptySpaces) {
+    var maximNombreTrobat = false
+    while(nReis < emptySpaces && !maximNombreTrobat) {
       e = new ScalAT("CrowdedChessboard")
 
+      println("Provem amb " ++ nReis.toString ++ " Reis")
       afegirConstraintsReis(e, nReis)
 
       result2 = e.solve()
@@ -550,8 +552,12 @@ object CrowdedChessboard extends App{
       if (result2.satisfiable) {
         println("ES SATISFACIBLE AIXI QUE ACTUALITZEM REIS!")
         actualitzarAuxiliars(e, true)
+        nReis += 1
       }
-      else println("El màxim nombre de reis que podem posar és " ++ (nReis - 1).toString)
+      else {
+        maximNombreTrobat = true
+        println("El màxim nombre de reis que podem posar és " ++ (nReis - 1).toString)
+      }
     }
 
     println(getTauler)
