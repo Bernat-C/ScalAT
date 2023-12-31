@@ -25,7 +25,7 @@ object CrowdedChessboard extends App{
   var instanciaEscollida = 5 //De 0 a 11
 
 
-  println("Escull l'instància a resoldre (0-11):")
+  println("Escull la instància a resoldre (0-11):")
   instanciaEscollida = readLine().toInt
   println("Escull si el problema ha de ser satisfactible o no, afegint un cavall (0 = Insatisfactible, 1 = Satisfactible):")
   unsat = if(readLine().toInt == 0) true else false
