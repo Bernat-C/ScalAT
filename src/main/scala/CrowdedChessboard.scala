@@ -139,12 +139,13 @@ object CrowdedChessboard extends App{
     //Lleuger augment sat, gran decrement unsat
     for (i <- 0 until n)
       for (j <- i + 1 until n) {
-        //e.addClause(-reines(2)(i) :: -reines(1)(j) :: List())
-        //e.addClause(-reines(i)(2) :: -reines(j)(1) :: List())
-
         if (configuracioLog) {
-          e.addAMOLog(reines(2)(i) :: reines(1)(j) :: List())
-          e.addAMOLog(reines(i)(2) :: reines(j)(1) :: List())
+          //Si a la fila 0 columna i, per qualsevol i, hi ha una reina,
+          //no pot ser que a la fila 1 columna j (per qualsevol j>i), hi hagi una reina
+          e.addAMOLog(reines(0)(i) :: reines(1)(j) :: List())
+          //Si a la columna 0 fila i, per qualsevol i, hi ha una reina,
+          //no pot ser que a la columna 1 fila j (per qualsevol j>i), hi hagi una reina
+          e.addAMOLog(reines(i)(0) :: reines(j)(1) :: List())
         }
         else {
           e.addAMOQuad(reines(2)(i) :: reines(1)(j) :: List())
