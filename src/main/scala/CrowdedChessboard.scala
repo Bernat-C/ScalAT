@@ -145,6 +145,8 @@ object CrowdedChessboard extends App{
         if (configuracioLog) {
           //Simetria horitzontal
           e.addAMOLog(reines(1)(i) :: reines(0)(j) :: List())
+          //e.addAMOLog(reines(0)(i) :: reines(n-1)(j) :: List())
+          //e.addAMOLog(reines(i)(0) :: reines(j)(n-1) :: List())
           //e.addAMOLog(reines(i)(n-1) :: reines(j)(0) :: List())
           //e.addAMOLog(reines(i)(2) :: reines(j)(1) :: List())
         }
@@ -212,22 +214,20 @@ object CrowdedChessboard extends App{
     }
 
     if (nAlfils >= 2 * (n - 1)) {
-      //Reifiquem (????????????????????????) caselles amb alfil i diagonals
+      //Reifiquem caselles amb alfil i diagonals
       for (v <- -n + 1 until n) {
         var casellesDiag = (for (i <- 0 until n; j <- 0 until n; if i - j == v) yield alfils(i)(j)).toList;
         for (i <- casellesDiag.indices) e.addClause(-casellesDiag(i) :: diagonals(v + n - 1) :: List())
-        //e.addClause(List(-diagonals(v + n - 1)).concat(casellesDiag))
         e.addALO(List(-diagonals(v + n - 1)).concat(casellesDiag))
       }
 
       //Hi ha d'haver exactament 2*(n-1) diagonals amb un alfil
       e.addEK(diagonals.toList, 2 * (n - 1))
 
-      //Reifiquem (????????????????????????) caselles amb alfil i contradiagonals
+      //Reifiquem caselles amb alfil i contradiagonals
       for (v <- 0 to 2 * n - 2) {
         var casellesContradiag = (for (i <- 0 until n; j <- 0 until n; if i + j == v) yield alfils(i)(j)).toList;
         for (i <- casellesContradiag.indices) e.addClause(-casellesContradiag(i) :: contradiagonals(v) :: List())
-        //e.addClause(List(-contradiagonals(v + n - 1)).concat(casellesContradiag))
         e.addALO(List(-contradiagonals(v)).concat(casellesContradiag))
       }
 
@@ -243,7 +243,6 @@ object CrowdedChessboard extends App{
       for (i <- possibleMoves; if i._1 + x >= 0 && i._2 + y >= 0 && i._1 + x < n && i._2 + y < n)
         if (configuracioLog) e.addAMOLog(List(cavalls(x)(y), cavalls(i._1 + x)(i._2 + y)))
         else e.addAMOQuad(List(cavalls(x)(y), cavalls(i._1 + x)(i._2 + y)))
-    //e.addClause(-cavalls(x)(y) :: -cavalls(i._1+x)(i._2+y) :: List())
   }
 
   //val possibleMovesReis = List((1, 0), (1, -1), (0, -1), (-1, -1), (-1,0), (-1,1), (0,1), (1,1))
@@ -323,16 +322,16 @@ object CrowdedChessboard extends App{
 
   //Si hem de trobar el nombre màxim de reis
   if(result.satisfiable && placeKings){
-    actualitzarAuxiliars(e, false)
-    val emptySpaces = n*n - nReines - nAlfils - nTorres - nCavalls
-    e2 = new ScalAT("CrowdedChessboardKings")
+    actualitzarAuxiliars(e, false) //Guardem la solució trobada
+    val emptySpaces = n*n - nReines - nAlfils - nTorres - nCavalls //Calculem el nombre de caselles buides que hi ha
+    e2 = new ScalAT("CrowdedChessboardKings") //Creem un nou objecte ScalAT que utilitzarem per obtenir la cota mínima
     reis = e2.newVar2DArray(n,n)
     //Llista de caselles ocupades per altres peces
     val l = (for(i <- 0 until n; j <- 0 until n; if(
       e.getValue(reines(i)(j)) |  e.getValue(torres(i)(j)) |  e.getValue(alfils(i)(j)) |  e.getValue(cavalls(i)(j))
     )) yield reis(i)(j)).toList
 
-    //Obtenim el nombre de reis màxim en la solució inicial
+    //Obtenim el nombre de reis màxim en la solució inicial, és a dir, el mínim nombre de reis que podem posar a la instància
     var nReis = 0
     var result2: SolverResult = null
     var kingsTime: Double = 0
@@ -340,10 +339,11 @@ object CrowdedChessboard extends App{
       e2 = new ScalAT("CrowdedChessboardKings")
       nReis += 1
       reis = e2.newVar2DArray(n, n)
-      for (i <- l.indices) e2.addClause(-l(i) :: List())
-      e2.addEK(reis.flatten.toList, nReis)
+      for (i <- l.indices) e2.addClause(-l(i) :: List()) //No hi pot haver cap rei a una casella ocupada per una altra peça
+      e2.addEK(reis.flatten.toList, nReis) //La solució ha de contenir nReis reis
       for (x <- 0 until n; y <- 0 until n) {
         for (i <- possibleMovesReis; if i._1 + x >= 0 && i._2 + y >= 0 && i._1 + x < n && i._2 + y < n) {
+          //Restriccions sobre les caselles que els reis poden amenaçar
           if (configuracioLog) e2.addAMOLog(List(reis(x)(y), reis(i._1 + x)(i._2 + y)))
           else e2.addAMOQuad(List(reis(x)(y), reis(i._1 + x)(i._2 + y)))
         }
@@ -355,7 +355,7 @@ object CrowdedChessboard extends App{
         println("* Determinat que com a mínim és satisfactible amb " ++ nReis.toString() ++ " rei(s) *")
         for (i <- reines.indices) {
           for (j <- reines.indices) {
-            reisAux(i)(j) = e2.getValue(reis(i)(j))
+            reisAux(i)(j) = e2.getValue(reis(i)(j)) //Guardem la solució trobada (la part dels reis només)
           }
         }
       }
@@ -374,7 +374,7 @@ object CrowdedChessboard extends App{
       e = new ScalAT("CrowdedChessboard")
 
       println("Provem-ho amb " ++ nReis.toString ++ " reis:")
-      afegirConstraintsReis(e, nReis)
+      afegirConstraintsReis(e, nReis) //Afegim totes les restriccions de la part obligatòria més les restriccions dels reis, per nReis
 
       result2 = e.solve()
       kingsTime += result2.time
@@ -382,11 +382,11 @@ object CrowdedChessboard extends App{
 
       if (result2.satisfiable) {
         println("Satisfactible. Provem-ho amb un rei més.\n")
-        actualitzarAuxiliars(e, true)
+        actualitzarAuxiliars(e, true) //Actualitzem la solució trobada
         nReis += 1
       }
       else {
-        maximNombreTrobat = true
+        maximNombreTrobat = true //Com que amb nReis no ha sigut satisfactible, vol dir que ja hem trobat el nombre màxim (nReis-1)
         println("No és satisfactible.\n")
         println("Per tant, el màxim nombre de reis que podem posar són " ++ (nReis - 1).toString ++ " rei(s):\n")
       }
@@ -396,7 +396,7 @@ object CrowdedChessboard extends App{
   }
     // Si no hem de trobar el nombre màxim de reis
   else if (!placeKings && result.satisfiable) {
-    actualitzarAuxiliars(e, false)
+    actualitzarAuxiliars(e, false) //Guardem la solució trobada
     getTauler
   }
 }
