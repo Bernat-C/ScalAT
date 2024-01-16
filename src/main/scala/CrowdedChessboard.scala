@@ -152,7 +152,7 @@ object CrowdedChessboard extends App{
           //e.addAMOLog(reines(i)(2) :: reines(j)(1) :: List())
         }
         else {
-          e.addAMOQuad(reines(1)(i) :: reines(0)(j) :: List())
+          e.addAMOQuad(reines(n-1)(i) :: reines(0)(j) :: List())
           //e.addAMOQuad(reines(i)(2) :: reines(j)(1) :: List())
         }
       }
@@ -241,6 +241,7 @@ object CrowdedChessboard extends App{
     e.addClause(alfils(n-1)(0) :: List())
     e.addClause(-alfils(0)(n-1) :: List())
     e.addClause(-alfils(n-1)(n-1) :: List())
+
     // CAVALLS
 
     //val possibleMoves = List((1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1))
