@@ -144,7 +144,8 @@ object CrowdedChessboard extends App{
 
         if (configuracioLog) {
           //Simetria horitzontal
-          e.addAMOLog(reines(1)(i) :: reines(0)(j) :: List())
+          e.addAMOLog(reines(n-1)(i) :: reines(0)(j) :: List())
+          //e.addAMOLog(reines(1)(i) :: reines(0)(j) :: List())
           //e.addAMOLog(reines(0)(i) :: reines(n-1)(j) :: List())
           //e.addAMOLog(reines(i)(0) :: reines(j)(n-1) :: List())
           //e.addAMOLog(reines(i)(n-1) :: reines(j)(0) :: List())
@@ -235,6 +236,11 @@ object CrowdedChessboard extends App{
       e.addEK(contradiagonals.toList, 2 * (n - 1))
     }
 
+    //Trencament de simetries
+    e.addClause(alfils(0)(0) :: List())
+    e.addClause(alfils(n-1)(0) :: List())
+    e.addClause(-alfils(0)(n-1) :: List())
+    e.addClause(-alfils(n-1)(n-1) :: List())
     // CAVALLS
 
     //val possibleMoves = List((1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1))
