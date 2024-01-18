@@ -1,0 +1,28 @@
+nPeces = 4;
+
+durada = [25,5,20,15];
+
+nInstruments = 3;
+
+requereix = [|1,1,1,
+	| 2,0,1,
+	| 0,2,0,
+	| 0,1,1,
+	|];
+
+nMusics = 10;
+
+saptocar = [| true,true,false, | false,false,true,
+	| false,true,false, | false,true,true,
+	| true,true,false, | false,true,false,
+	| true,false,true, | false,true,false,
+	| true,false,true, | true,true,true,|];
+	
+pressupost = 80;
+
+salari = [3,3,2,2,3,2,3,2,3,4];
+
+
+nPrecs = 2;
+pred = [2,2];
+succ = [3,4];
