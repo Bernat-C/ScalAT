@@ -27,9 +27,6 @@ array[1..nInstruments] of int: poolInstruments = [sum(j in 1..nMusics)(saptocar[
 
 /* CONSTRAINTS */
 
-%constraint max([t| t in 1..dummyUB, p in 1..nPeces where x[p,t]]) > max([sum([d[p]*requereix[p,i]/poolInstruments[i]| p in 1..nPeces]) | i in 1..nInstruments]);
-
-
 % Constraint que assegura que es respecta la prioritat
 constraint forall(i in 1..nPrecs, j in 0..dummyUB, t in j..dummyUB) (
     % x[succ[i],j] -> not x[pred[i],t]
@@ -43,17 +40,6 @@ constraint forall(t in 0..dummyUB, m in 1..nMusics) (
 
 % La primera cançó ha de començar al principi del festival
 constraint exists(i in 1..nPeces)(x[i,0]);
-
-% Una cançó o bé comença al principi, o bé comença quan una altra cançó acaba
-/* constraint forall(p in 1..nPeces, t in 0..dummyUB)(
-   not x[p,t] \/ t=0 \/ x[p,t-1] \/ exists(i in 1..nPeces)(x[i,t-1] /\ not x[i,t])
-); */
-
-
-% No hi pot haver forats buits!
-/*constraint forall(t in 0..dummyUB where 5*t < max_value) (
-  exists(p in 1..nPeces)(x[p,t])
-);*/
 
 % Que cada peça tingui els instruments que necessita durant l'execució
 constraint forall(i in 1..nPeces, j in 1..nInstruments)(

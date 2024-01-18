@@ -26,9 +26,6 @@ var 0..pressupost: preu = sum([d[i]*salari[j]| j in 1..nMusics, i in 1..nPeces w
 
 array[1..nInstruments] of int: poolInstruments = [sum(j in 1..nMusics)(saptocar[j,i])| i in 1..nInstruments]; % Number of each instrument we have.
 
-% Assegura que apareixeran el nombre d'instruments que son requerits. No pot ser global cardinality closed perquè no existeix l'instrument 0.
-%constraint global_cardinality([musicsAssignats[i,j]|i in 1..nPeces, j in 1..nMusics],[i|i in 1..nInstruments],[sum([requereix[p,i] | p in 1..nPeces])|i in 1..nInstruments]);
-
 % Lower bound per el màxim de temps
 constraint max([s[i]+d[i]| i in 1..nPeces]) > max([sum([d[p]*requereix[p,i]/poolInstruments[i]| p in 1..nPeces]) | i in 1..nInstruments]);
 
@@ -36,12 +33,6 @@ constraint max([s[i]+d[i]| i in 1..nPeces]) > max([sum([d[p]*requereix[p,i]/pool
 constraint forall(i in 1..nPrecs) (
   s[succ[i]] >= s[pred[i]]+d[pred[i]]
 );
-
-% Una cançó o bé comença al principi, o bé comença quan una altra cançó acaba
-
-/*constraint forall(i in 1..nPeces)(
-  s[i] = 0 \/ exists(j in 1..nPeces where j != i)(s[j] + d[j] = s[i])
-);*/
 
 constraint forall(p in 1..nPeces, m in 1..nMusics) (
   if not exists(i in 1..nInstruments) (saptocar[m, i] /\ requereix[p, i]>0) then 
@@ -62,12 +53,6 @@ constraint forall(i in 1..nPeces, j in 1..nInstruments)(
 constraint forall(i in 1..nPeces, j in 1..nMusics)(
     if musicsAssignats[i,j]!=0 then saptocar[j,musicsAssignats[i,j]] endif
 );
-
-% Constraint que assegura que un músic no pugui de tocar dos peces simultàniament
-/*constraint forall(i in 1..nPeces, m in 1..nMusics, j in 1..nPeces)(
-      % Si dues peces són concurrents, llavors un mateix músic no pot tocar a les dues
-      if s[i] <= s[j] /\ s[i] + d[i] > s[j] /\ i!=j then musicsAssignats[i,m]*musicsAssignats[j,m]=0 endif
-);*/
 
 /* Si dos músics son exactament iguals farem servir més el que cobra menys */
 constraint forall(i in 1..nMusics, j in i..nMusics)(
@@ -92,9 +77,6 @@ constraint forall(i in 1..nInstruments) (
   cumulative(s,d,[requereix[p,i]|p in 1..nPeces],poolInstruments[i])
 );
 
-% Constraint per dir que no es poden executar més musics a la vegada que els que tenim.
-%constraint cumulative(s,d,[sum([requereix[p,i] | i in 1..nInstruments])|p in 1..nPeces],nMusics);
-
 %solve minimize max([s[i]+d[i]| i in 1..nPeces])*pressupost + preu;
 solve :: int_search(s, smallest, indomain_min) minimize max([s[i]+d[i]| i in 1..nPeces]);
 
@@ -111,20 +93,6 @@ output[
   concat(["  Music " ++ show(m) ++ " toca instrument " ++ show(fix(musicsAssignats[p,m])) ++ "\n" | m in 1..nMusics where fix(musicsAssignats[p,m])!=0]) |  
   p in 1..nPeces
 ];
-
-/* CÀLCULS DE LOWER BOUNDS I UPPER BOUNDS */
-/*constraint forall(i in 1..nPeces) ( % LB
-    s[i] >= max([s[pred[j]]+d[pred[j]] | j in 1..nPrecs where succ[j]==i])
-);
-
-constraint forall(i in 1..nPeces) ( % UB
-    s[i] <= min([s[i]-d[pred[j]] | j in 1..nPrecs where succ[j]==i])
-);*/
-
-
-
-
-
 
 
 
