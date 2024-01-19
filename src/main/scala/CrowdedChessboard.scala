@@ -85,7 +85,6 @@ object CrowdedChessboard extends App{
     e.addEK(reines.flatten.toList, nReines)
     e.addEK(torres.flatten.toList, nTorres)
     e.addEK(alfils.flatten.toList, nAlfils)
-    //e.addEK((for(i <- 0 until n; j <- 0 until n; if(i == 0 | j == 0 | i == n-1 | j == n-1)) yield alfils(i)(j)).toList, nAlfils)
     e.addEK(cavalls.flatten.toList, nCavalls)
 
     // REINES
@@ -128,42 +127,17 @@ object CrowdedChessboard extends App{
       else e.addAMOQuad(l)
     }
 
-    //Trencament de simetries
-    //Original: Doble sat, meitat unsat
-    /*
-    for(i <- 0 until n )
-      for(j <- i+1 until n){
-        e.addClause(-reines(1)(i) :: -reines(n-1)(j) :: List())
-        e.addClause(-reines(i)(1) :: -reines(j)(n-1) :: List())
-      }*/
-    //Lleuger augment sat, gran decrement unsat
+    //Trencament de simetries horitzontal i vertical
     for (i <- 0 until n)
       for (j <- i + 1 until n) {
-        //e.addClause(-reines(2)(i) :: -reines(1)(j) :: List())
-        //e.addClause(-reines(i)(2) :: -reines(j)(1) :: List())
-
         if (configuracioLog) {
           //Simetria horitzontal
           e.addAMOLog(reines(n-1)(i) :: reines(0)(j) :: List())
-          //e.addAMOLog(reines(1)(i) :: reines(0)(j) :: List())
-          //e.addAMOLog(reines(0)(i) :: reines(n-1)(j) :: List())
-          //e.addAMOLog(reines(i)(0) :: reines(j)(n-1) :: List())
-          //e.addAMOLog(reines(i)(n-1) :: reines(j)(0) :: List())
-          //e.addAMOLog(reines(i)(2) :: reines(j)(1) :: List())
         }
         else {
           e.addAMOQuad(reines(n-1)(i) :: reines(0)(j) :: List())
-          //e.addAMOQuad(reines(i)(2) :: reines(j)(1) :: List())
         }
       }
-    //Més del doble sat, menys del doble unsat
-    /*
-    for (i <- 0 until n)
-      for (j <- i + 1 until n) {
-        e.addClause(-reines(n - 1)(i) :: -reines(1)(j) :: List())
-        e.addClause(-reines(i)(n - 1) :: -reines(j)(1) :: List())
-      }*/
-
 
     // TORRES
     //A cada fila hi ha una torre
