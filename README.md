@@ -1,8 +1,3 @@
-# MiniZinc
-La carpeta MiniZinc conté les solucions a la part de MiniZinc. 
-
-Dins la carpeta src hi ha els fitxers referents a la part de ScalAT
-
 # ScalAT
 SAT modelling and solving with SCALA and SAT solver (SAT4J).
 
